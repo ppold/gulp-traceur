@@ -3,6 +3,7 @@ var path = require('path');
 var gutil = require('gulp-util');
 var through = require('through2');
 var traceur = require('traceur');
+var applySourceMap = require('vinyl-sourcemaps-apply');
 
 module.exports = function (options) {
 	return through.obj(function (file, enc, cb) {
@@ -26,19 +27,14 @@ module.exports = function (options) {
 
 			if (ret.js) {
 				if (ret.sourceMap) {
-					ret.js += '\n//# sourceMappingURL=' + options.filename + '.map';
+                                        applySourceMap(file, ret.sourceMap);
 				}
 
 				file.contents = new Buffer(ret.js);
 			}
 
 			if (ret.sourceMap) {
-				this.push(new gutil.File({
-					cwd: file.cwd,
-					base: file.base,
-					path: file.path + '.map',
-					contents: new Buffer(ret.sourceMap)
-				}));
+                                applySourceMap(file, ret.sourceMap);
 			}
 		} catch (err) {
 			this.emit('error', new gutil.PluginError('gulp-traceur', err));
